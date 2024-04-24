@@ -5,10 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/nuchit2019/assessment-tax/config"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/nuchit2019/assessment-tax/config"
 )
 
 func main() {
@@ -16,21 +15,25 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 
-	
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatalf("error initializing configuration: %v", err)
+	}
+	defer cfg.Close()
+
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
-	cfg,err:=config.New()
-	if err!=nil{
-		log.Fatal("error initializing configuration: %v", err)
+	apiPort := cfg.Port
+	if apiPort == "" {
+		apiPort = "8080"
+		log.Fatal("PORT environment variable not set")
 	}
 
-	defer cfg.Close()
-
-	// e.Logger.Fatal(e.Start(":1323"))
-	apiPort := cfg.Port
+	address := fmt.Sprintf(":%s", apiPort)
 	fmt.Printf("Server is running on port %s\n", apiPort)
-	e.Logger.Fatal(e.Start(":" + apiPort))
-
+	if err := e.Start(address); err != nil {
+		log.Fatal("Error starting server: ", err)
+	}
 }
