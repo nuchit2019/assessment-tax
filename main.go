@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nuchit2019/assessment-tax/config"
+	"github.com/nuchit2019/assessment-tax/controller"
 )
 
 func main() {
@@ -24,6 +25,11 @@ func main() {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
+
+
+	 // Tax Handler
+	 taxController := controller.New(cfg)
+	 e.POST("/tax/calculations", taxController.TaxCalculate)
 
 	apiPort := cfg.Port
 	if apiPort == "" {
