@@ -13,17 +13,15 @@ type Store interface {
 	// TODO: Implement Store interface
 }
 
-type controller struct {
+type Controller  struct {
 	store Store
 }
 
-func New(db Store) *controller {
-	return &controller{
-		store: db,
-	}
+func New(db Store) *Controller {
+    return &Controller{store: db}
 }
 
-type Err struct {
+type ErrorResponse  struct {
 	Message string `json:"message"`
 }
 
@@ -36,8 +34,8 @@ type TaxResponse struct {
 }
 
 type TaxBracket struct {
-	MaxIncome float64 // Upper bound of the bracket
-	TaxRate   float64 // Tax rate for this bracket
+	MaxIncome float64 
+	TaxRate   float64
 }
 
 var taxBracket = []TaxBracket{
@@ -45,14 +43,14 @@ var taxBracket = []TaxBracket{
 	{MaxIncome: 500000, TaxRate: 0.10},
 	{MaxIncome: 1000000, TaxRate: 0.15},
 	{MaxIncome: 2000000, TaxRate: 0.20},
-	{TaxRate: 0.35}, // Default/catch-all for incomes above 2000000
+	{TaxRate: 0.35},
 
 }
 
-func (c *controller) TaxCalculate(ctx echo.Context) error {
+func (c *Controller) TaxCalculate(ctx echo.Context) error {
 	var req TaxRequest
 	if err := ctx.Bind(&req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, Err{Message: "invalid request body"})
+		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Message: "invalid request body"})
 	}
 
 	tax := calculateTax(req.TotalIncome)
