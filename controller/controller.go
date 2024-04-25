@@ -1,51 +1,22 @@
 package controller
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/nuchit2019/assessment-tax/model"
-)
-
-var ErrNotFound = errors.New("not found")
-
+) 
+ 
 type Store interface {
 	// TODO: Implement Store interface
 }
 
-type Controller  struct {
+ type Controller struct {
 	store Store
 }
 
 func New(db Store) *Controller {
-    return &Controller{store: db}
-}
-
-// type ErrorResponse  struct {
-// 	Message string `json:"message"`
-// }
-
-// type TaxRequest struct {
-// 	TotalIncome float64 `json:"totalIncome" example:"500000.0"`
-// }
-
-// type TaxResponse struct {
-// 	Tax float64 `json:"tax"`
-// }
-
-// type TaxBracket struct {
-// 	MaxIncome float64 
-// 	TaxRate   float64
-// }
-
-var taxBracket = []model.TaxBracket{
-	{MaxIncome: 150000, TaxRate: 0},
-	{MaxIncome: 500000, TaxRate: 0.10},
-	{MaxIncome: 1000000, TaxRate: 0.15},
-	{MaxIncome: 2000000, TaxRate: 0.20},
-	{TaxRate: 0.35},
-
+	return &Controller{store: db}
 }
 
 func (c *Controller) TaxCalculate(ctx echo.Context) error {
@@ -54,13 +25,31 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
-	tax := calculateTax(req.TotalIncome)
+	taxableIncome := req.TotalIncome - 60000.0
+
+	for _, allowance := range req.Allowance {
+		if allowance.Type == model.AllowanceTypeDonation {
+			taxableIncome -= allowance.Amount
+		}
+	}
+
+	tax := calculateTax(taxableIncome)
+
+	tax -= req.WHT
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 }
 
 func calculateTax(income float64) float64 {
+	taxBracket := []model.TaxBracket{
+		{MaxIncome: 150000, TaxRate: 0},
+		{MaxIncome: 500000, TaxRate: 0.10},
+		{MaxIncome: 1000000, TaxRate: 0.15},
+		{MaxIncome: 2000000, TaxRate: 0.20},
+		{TaxRate: 0.35},
+	}
+
 	tax := 0.0
-	remainingIncome := income - 60000
+	remainingIncome := income
 
 	for _, bracket := range taxBracket {
 		if remainingIncome <= 0 {
@@ -74,9 +63,7 @@ func calculateTax(income float64) float64 {
 
 		tax += taxableAmount * bracket.TaxRate
 		remainingIncome -= taxableAmount
-
 	}
 
 	return tax
-
 }
