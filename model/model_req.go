@@ -9,7 +9,6 @@ const (
 	AllowanceTypeKReceipt AllowanceType = "k-receipt"
 )
 
-
 type Allowance struct {
 	Type        AllowanceType 	`json:"allowanceType"`
 	Amount      float64	  		`json:"amount"`
@@ -21,11 +20,6 @@ type TaxRequest struct {
 	Allowance   []Allowance `json:"allowances"`
 }
 
-type TaxResponse struct {
-	Tax float64 `json:"tax"`
-}
-
-
 type ErrInvalidAllowanceType  struct {
 	Type AllowanceType
 }
@@ -33,3 +27,4 @@ type ErrInvalidAllowanceType  struct {
 func (e *ErrInvalidAllowanceType) Error() string {
 	return fmt.Sprintf("invalid allowance type: %s", e.Type)
 }
+

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/nuchit2019/assessment-tax/model"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -21,24 +22,24 @@ func New(db Store) *Controller {
     return &Controller{store: db}
 }
 
-type ErrorResponse  struct {
-	Message string `json:"message"`
-}
+// type ErrorResponse  struct {
+// 	Message string `json:"message"`
+// }
 
-type TaxRequest struct {
-	TotalIncome float64 `json:"totalIncome" example:"500000.0"`
-}
+// type TaxRequest struct {
+// 	TotalIncome float64 `json:"totalIncome" example:"500000.0"`
+// }
 
-type TaxResponse struct {
-	Tax float64 `json:"tax"`
-}
+// type TaxResponse struct {
+// 	Tax float64 `json:"tax"`
+// }
 
-type TaxBracket struct {
-	MaxIncome float64 
-	TaxRate   float64
-}
+// type TaxBracket struct {
+// 	MaxIncome float64 
+// 	TaxRate   float64
+// }
 
-var taxBracket = []TaxBracket{
+var taxBracket = []model.TaxBracket{
 	{MaxIncome: 150000, TaxRate: 0},
 	{MaxIncome: 500000, TaxRate: 0.10},
 	{MaxIncome: 1000000, TaxRate: 0.15},
@@ -48,13 +49,13 @@ var taxBracket = []TaxBracket{
 }
 
 func (c *Controller) TaxCalculate(ctx echo.Context) error {
-	var req TaxRequest
+	var req model.TaxRequest
 	if err := ctx.Bind(&req); err != nil {
-		return ctx.JSON(http.StatusBadRequest, ErrorResponse{Message: "invalid request body"})
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
 	tax := calculateTax(req.TotalIncome)
-	return ctx.JSON(http.StatusOK, TaxResponse{Tax: tax})
+	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 }
 
 func calculateTax(income float64) float64 {
