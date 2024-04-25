@@ -6,12 +6,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/nuchit2019/assessment-tax/model"
 ) 
- 
+
 type Store interface {
-	// TODO: Implement Store interface
+	GetTaxBrackets() ([]model.TaxBracket, error)
 }
 
- type Controller struct {
+type Controller struct {
 	store Store
 }
 
@@ -20,44 +20,63 @@ func New(db Store) *Controller {
 }
 
 func (c *Controller) TaxCalculate(ctx echo.Context) error {
-	var req model.TaxRequest
-	if err := ctx.Bind(&req); err != nil {
+	req := new(model.TaxRequest) 
+
+	if err := ctx.Bind(req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
-	taxableIncome := req.TotalIncome - 60000.0
-
-	for _, allowance := range req.Allowance {
-		if allowance.Type == model.AllowanceTypeDonation {
-			taxableIncome -= allowance.Amount
-		}
+	taxableIncome, err := c.calculateTaxableIncome(req)
+	if err != nil {
+		return err
 	}
 
-	tax := calculateTax(taxableIncome)
+	tax := c.calculateTax(taxableIncome) - req.WHT
 
-	tax -= req.WHT
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 }
 
-func calculateTax(income float64) float64 {
-	taxBracket := []model.TaxBracket{
-		{MaxIncome: 150000, TaxRate: 0},
-		{MaxIncome: 500000, TaxRate: 0.10},
-		{MaxIncome: 1000000, TaxRate: 0.15},
-		{MaxIncome: 2000000, TaxRate: 0.20},
-		{TaxRate: 0.35},
+func (c *Controller) calculateTaxableIncome(req *model.TaxRequest) (float64, error) {
+	taxableIncome := req.TotalIncome - 60000.0
+
+	for _, allowance := range req.Allowance {
+		switch allowance.Type {
+		case model.AllowanceTypeDonation:
+			taxableIncome -= allowance.Amount
+			
+		case model.AllowanceTypeKReceipt:
+			// taxableIncome -= allowance.Amount
+			// TODO: Implement K-Receipt logic
+			return 0, echo.NewHTTPError(http.StatusBadRequest, "TODO: Implement K-Receipt logic")
+
+		default:
+			return 0, echo.NewHTTPError(http.StatusBadRequest, "Invalid allowance type")
+		}
 	}
 
-	tax := 0.0
-	remainingIncome := income
+	return taxableIncome, nil
+}
 
-	for _, bracket := range taxBracket {
+func (c *Controller) calculateTax(taxableIncome float64) float64 {
+	taxBrackets, err := c.store.GetTaxBrackets()
+	if err != nil {
+		// TODO: Handle error appropriately (logging, internal error response)
+		return 0 
+	}
+	 
+
+	var tax float64
+	remainingIncome := taxableIncome
+
+	for _, bracket := range taxBrackets {
 		if remainingIncome <= 0 {
 			break
 		}
 
 		taxableAmount := remainingIncome
-		if taxableAmount > bracket.MaxIncome {
+		if taxableAmount <= bracket.MaxIncome {
+			taxableAmount = remainingIncome
+		} else {
 			taxableAmount = bracket.MaxIncome
 		}
 

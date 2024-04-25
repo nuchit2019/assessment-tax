@@ -15,9 +15,9 @@ type Config struct {
 	Admin         string
 	AdminPassword string
 }
- 
+
 func New() (*Config, error) {
-	 
+
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to database: %w", err)
