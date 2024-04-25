@@ -9,6 +9,7 @@ import (
 
 type Store interface {
 	GetTaxBrackets() ([]model.TaxBracket, error)
+	GetTaxLevel() ([]model.TaxLevel, error)
 }
 
 type Controller struct {
@@ -44,14 +45,43 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 
 	tax := c.calculateTax(taxableIncome)
 	tax -= req.WHT
+
+	if ctx.QueryParam("detail") == "true" {
+		taxLevels := c.calculateTaxLevels(taxableIncome)
+		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
+	}
+
+
+
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
+}
+
+func (c *Controller) calculateTaxLevels(taxableIncome float64) []model.TaxLevel {
+
+	taxLevels, err := c.store.GetTaxLevel()
+	if err != nil {
+		//TODD Handle error appropriately (logging, internal error response)
+		return nil
+	}
+
+	// Calculate tax levels based on taxable income
+	if taxableIncome <= 150000 {
+		taxLevels[0].Tax = 0.0
+	} else if taxableIncome <= 500000 {
+		taxLevels[1].Tax = 19000.0
+	} else {
+		// For income above 500,000, tax is 0 according to the new tax bracket structure
+		taxLevels[1].Tax = 19000.0
+	}
+
+	return taxLevels
 }
 
 func (c *Controller) calculateTax(taxableIncome float64) float64 {
 	var tax float64
 	taxBrackets, err := c.store.GetTaxBrackets()
 	if err != nil {
-		// Handle error appropriately (logging, internal error response)
+		// TODO Handle error appropriately (logging, internal error response)
 		return 0
 	}
 
