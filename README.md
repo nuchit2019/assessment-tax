@@ -331,7 +331,7 @@ Response body
 ในฐานะผู้ใช้ ฉันต้องการคำนวนภาษีจาก ข้อมูลที่ส่งให้พร้อมค่าลดหย่อน พร้อมระบุรายละเอียดของขั้นบันใดภาษี
 ```
 
-`POST:` tax/calculations
+`POST:` tax/calculations?detail=true
 
 ```json
 {

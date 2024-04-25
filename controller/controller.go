@@ -29,6 +29,7 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 	taxableIncome := req.TotalIncome - 60000.0 // Apply standard deduction
 
 	donationAllowance := 0.0
+	kReceiptAllowance := 0.0
 	for _, allowance := range req.Allowance {
 		if allowance.Type == model.AllowanceTypeDonation {
 			//taxableIncome -= allowance.Amount
@@ -38,25 +39,29 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 				donationAllowance += allowance.Amount
 			}
 
+		} else if allowance.Type == model.AllowanceTypeKReceipt {
+			if allowance.Amount > 50000 {
+				kReceiptAllowance += 50000
+			} else {
+				kReceiptAllowance += allowance.Amount
+			}
 		}
 	}
 
-	taxableIncome -= donationAllowance
+	taxableIncome -= (donationAllowance + kReceiptAllowance)
 
 	tax := c.calculateTax(taxableIncome)
 	tax -= req.WHT
 
 	if ctx.QueryParam("detail") == "true" {
-		taxLevels := c.calculateTaxLevels(taxableIncome)
+		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
 		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
 	}
-
-
 
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 }
 
-func (c *Controller) calculateTaxLevels(taxableIncome float64) []model.TaxLevel {
+func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxLevel {
 
 	taxLevels, err := c.store.GetTaxLevel()
 	if err != nil {
@@ -68,10 +73,10 @@ func (c *Controller) calculateTaxLevels(taxableIncome float64) []model.TaxLevel 
 	if taxableIncome <= 150000 {
 		taxLevels[0].Tax = 0.0
 	} else if taxableIncome <= 500000 {
-		taxLevels[1].Tax = 19000.0
+		taxLevels[1].Tax = tax //19000.0
 	} else {
 		// For income above 500,000, tax is 0 according to the new tax bracket structure
-		taxLevels[1].Tax = 19000.0
+		taxLevels[1].Tax = tax //19000.0
 	}
 
 	return taxLevels
