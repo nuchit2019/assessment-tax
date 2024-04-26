@@ -34,7 +34,6 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 	kReceiptAllowance := 0.0
 	for _, allowance := range req.Allowance {
 		if allowance.Type == model.AllowanceTypeDonation {
-			//taxableIncome -= allowance.Amount
 			if allowance.Amount > 100000 { // เงินบริจาคสามารถหย่อนได้สูงสุดเพียง 100,000 บาท
 				donationAllowance += 100000
 			} else {
@@ -81,7 +80,7 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 				taxLevels[i].Tax = tax
 			}
 		default:
-			// Handle other cases if necessary
+			// TODO Handle other cases if necessary
 		}
 	}
 
