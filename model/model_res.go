@@ -14,10 +14,15 @@ type TaxDetailResponse struct {
 	TaxLevel []TaxLevel `json:"taxLevel"`
 }
 
-// TaxLevel represents a tax level detail.
+type TaxLevelRes struct {
+	Level string  `json:"level"`
+	Tax   float64 `json:"tax"` 
+}
+
+ 
 type TaxLevel struct {
 	Level string  `json:"level"`
-	Tax   float64 `json:"tax"`
+	Tax   float64 `json:"tax"` 
 }
 
 type PersonalDeductionResponse struct {

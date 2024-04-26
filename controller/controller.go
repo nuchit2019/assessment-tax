@@ -1,6 +1,8 @@
 package controller
 
 import (
+ 
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,7 +12,7 @@ import (
 type Store interface {
 	GetTaxBrackets() ([]model.TaxBracket, error)
 	GetTaxLevel() ([]model.TaxLevel, error)
-	UpdatePersonalDeduction(amount float64,deductType string) error
+	UpdatePersonalDeduction(amount float64, deductType string) error
 }
 
 type Controller struct {
@@ -27,13 +29,17 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
-	taxableIncome := req.TotalIncome - 60000.0 // Apply standard deduction
+	// Input Validation (added)
+	if len(req.Allowance) == 0 {
+		//Handle case when allowances are empty
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body allowances are empty"})
+	}
 
+	taxableIncome := req.TotalIncome - 60000.0 // Apply standard deduction
 	donationAllowance := 0.0
 	kReceiptAllowance := 0.0
 	for _, allowance := range req.Allowance {
 		if allowance.Type == model.AllowanceTypeDonation {
-			//taxableIncome -= allowance.Amount
 			if allowance.Amount > 100000 { // เงินบริจาคสามารถหย่อนได้สูงสุดเพียง 100,000 บาท
 				donationAllowance += 100000
 			} else {
@@ -58,36 +64,46 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
 		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
 	}
-
+	
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
+
 }
 
 func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxLevel {
 
 	taxLevels, err := c.store.GetTaxLevel()
 	if err != nil {
-		//TODD Handle error appropriately (logging, internal error response)
-		return nil
+		log.Printf("error getting tax levels: %v", err)
+		return []model.TaxLevel{}
 	}
-
-	// Calculate tax levels based on taxable income
-	if taxableIncome <= 150000 {
-		taxLevels[0].Tax = 0.0
-	} else if taxableIncome <= 500000 {
-		taxLevels[1].Tax = tax //19000.0
-	} else {
-		// For income above 500,000, tax is 0 according to the new tax bracket structure
-		taxLevels[1].Tax = tax //19000.0
+	for i := range taxLevels {
+		switch i {
+		case 0:
+			if taxableIncome <= 150000 {
+				taxLevels[i].Tax = 0.00
+			}
+		case 1:
+			if taxableIncome <= 500000 {
+				if tax == 0 {
+					taxLevels[i].Tax = 0.00
+				} else {
+					taxLevels[i].Tax = tax
+				}
+			}
+		default:
+			// TODO Handle other cases if necessary
+		}
 	}
 
 	return taxLevels
+	  
 }
 
 func (c *Controller) calculateTax(taxableIncome float64) float64 {
 	var tax float64
 	taxBrackets, err := c.store.GetTaxBrackets()
 	if err != nil {
-		// TODO Handle error appropriately (logging, internal error response)
+		log.Printf("error getting tax brackets: %v", err)
 		return 0
 	}
 
