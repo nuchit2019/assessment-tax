@@ -29,7 +29,7 @@ func (c *Controller) UpdatePersonalDeductionController(ctx echo.Context) error {
 	case "personal":
 		responseBody = model.PersonalDeductionResponse{PersonalDeduction: req.Amount}
 	case "k-receipt":
-		//TODO: Add K-Receipt Deduction
+		responseBody = model.KreceiptDeductionResponse{KreceiptDeduction: req.Amount}
 	default:
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid deductType"})
 	}
