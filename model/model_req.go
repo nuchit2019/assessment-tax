@@ -9,6 +9,14 @@ const (
 	AllowanceTypeKReceipt AllowanceType = "k-receipt"
 )
 
+type DeductionType string
+
+const (
+	PersonalDeduction DeductionType = "personal"
+	DonationDeduction DeductionType = "donation"
+	KReceiptDeduction DeductionType = "k-receipt"
+)
+
 type Allowance struct {
 	Type        AllowanceType 	`json:"allowanceType"`
 	Amount      float64	  		`json:"amount"`
@@ -28,3 +36,7 @@ func (e *ErrInvalidAllowanceType) Error() string {
 	return fmt.Sprintf("invalid allowance type: %s", e.Type)
 }
 
+
+type PersonalDeductionRequest struct {
+	Amount float64 `json:"amount"`
+}

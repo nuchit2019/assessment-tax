@@ -10,6 +10,7 @@ import (
 type Store interface {
 	GetTaxBrackets() ([]model.TaxBracket, error)
 	GetTaxLevel() ([]model.TaxLevel, error)
+	UpdatePersonalDeduction(amount float64,deductType string) error
 }
 
 type Controller struct {

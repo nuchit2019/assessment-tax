@@ -26,10 +26,16 @@ func main() {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
 
+	taxController := controller.New(cfg)
+	e.POST("/tax/calculations", taxController.TaxCalculate)
 
-	 // Tax Handler
-	 taxController := controller.New(cfg)
-	 e.POST("/tax/calculations", taxController.TaxCalculate)
+	//  Admin BasicAuth
+	admin := e.Group("/admin")
+	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		return username == cfg.Admin && password == cfg.AdminPassword, nil
+	}))
+
+	admin.POST("/deductions/:deductType", taxController.UpdatePersonalDeductionController)
 
 	apiPort := cfg.Port
 	if apiPort == "" {
