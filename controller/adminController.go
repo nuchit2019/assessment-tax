@@ -19,6 +19,18 @@ func (c *Controller) UpdatePersonalDeductionController(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "deductType Parameter is required"})
 	}
 
+	if deductType == "personal" && req.Amount < 10000 {
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท"})
+	} 
+
+	if deductType == "k-receipt" && req.Amount <= 0 {
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "ค่าลด k-receipt ต้องมีค่ามากกว่า 0 บาท"})
+	}
+	
+	if deductType == "k-receipt" && req.Amount > 100000 {
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "แอดมิน สามารถกำหนด k-receipt สูงสุดได้ แต่ไม่เกิน 100,000 บาท"})
+	}
+
 	err := c.store.UpdatePersonalDeduction(req.Amount, deductType)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, model.ErrorResponse{Message: "failed to update personal deduction ERROR: " + err.Error()})
