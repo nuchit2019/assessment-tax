@@ -28,3 +28,7 @@ func (e *ErrInvalidAllowanceType) Error() string {
 	return fmt.Sprintf("invalid allowance type: %s", e.Type)
 }
 
+
+type PersonalDeductionRequest struct {
+	Amount float64 `json:"amount"`
+}
