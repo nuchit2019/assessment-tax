@@ -27,7 +27,10 @@ func main() {
 	})
 
 	taxController := controller.New(cfg)
-	e.POST("/tax/calculations", taxController.TaxCalculate)
+
+	tax := e.Group("/tax")
+	tax.POST("/calculations", taxController.TaxCalculate)
+	tax.POST("/calculations/upload-csv", taxController.TaxCalculate)
 
 	//  Admin BasicAuth
 	admin := e.Group("/admin")
