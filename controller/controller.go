@@ -91,8 +91,8 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 func (c *Controller) calculateTax(taxableIncome float64) float64 {
 	var tax float64
 	taxBrackets, err := c.store.GetTaxBrackets()
-	if err != nil {
-		// TODO Handle error appropriately (logging, internal error response)
+	if err != nil { 
+		log.Printf("error getting tax brackets: %v", err)
 		return 0
 	}
 
