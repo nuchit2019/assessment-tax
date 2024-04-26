@@ -1,6 +1,7 @@
 package controller
 
 import (
+ 
 	"log"
 	"net/http"
 
@@ -28,8 +29,13 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
-	taxableIncome := req.TotalIncome - 60000.0 // Apply standard deduction
+	// Input Validation (added)
+	if len(req.Allowance) == 0 {
+		//Handle case when allowances are empty
+		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body allowances are empty"})
+	}
 
+	taxableIncome := req.TotalIncome - 60000.0 // Apply standard deduction
 	donationAllowance := 0.0
 	kReceiptAllowance := 0.0
 	for _, allowance := range req.Allowance {
@@ -58,8 +64,9 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
 		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
 	}
-
+	
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
+
 }
 
 func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxLevel {
@@ -68,16 +75,20 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 	if err != nil {
 		log.Printf("error getting tax levels: %v", err)
 		return []model.TaxLevel{}
-	} 
+	}
 	for i := range taxLevels {
 		switch i {
 		case 0:
 			if taxableIncome <= 150000 {
-				taxLevels[i].Tax = 0.0
+				taxLevels[i].Tax = 0.00
 			}
 		case 1:
 			if taxableIncome <= 500000 {
-				taxLevels[i].Tax = tax
+				if tax == 0 {
+					taxLevels[i].Tax = 0.00
+				} else {
+					taxLevels[i].Tax = tax
+				}
 			}
 		default:
 			// TODO Handle other cases if necessary
@@ -85,12 +96,13 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 	}
 
 	return taxLevels
+	  
 }
 
 func (c *Controller) calculateTax(taxableIncome float64) float64 {
 	var tax float64
 	taxBrackets, err := c.store.GetTaxBrackets()
-	if err != nil { 
+	if err != nil {
 		log.Printf("error getting tax brackets: %v", err)
 		return 0
 	}
