@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,7 +11,7 @@ import (
 type Store interface {
 	GetTaxBrackets() ([]model.TaxBracket, error)
 	GetTaxLevel() ([]model.TaxLevel, error)
-	UpdatePersonalDeduction(amount float64,deductType string) error
+	UpdatePersonalDeduction(amount float64, deductType string) error
 }
 
 type Controller struct {
@@ -66,18 +67,22 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 
 	taxLevels, err := c.store.GetTaxLevel()
 	if err != nil {
-		//TODD Handle error appropriately (logging, internal error response)
-		return nil
-	}
-
-	// Calculate tax levels based on taxable income
-	if taxableIncome <= 150000 {
-		taxLevels[0].Tax = 0.0
-	} else if taxableIncome <= 500000 {
-		taxLevels[1].Tax = tax //19000.0
-	} else {
-		// For income above 500,000, tax is 0 according to the new tax bracket structure
-		taxLevels[1].Tax = tax //19000.0
+		log.Printf("error getting tax levels: %v", err)
+		return []model.TaxLevel{}
+	} 
+	for i := range taxLevels {
+		switch i {
+		case 0:
+			if taxableIncome <= 150000 {
+				taxLevels[i].Tax = 0.0
+			}
+		case 1:
+			if taxableIncome <= 500000 {
+				taxLevels[i].Tax = tax
+			}
+		default:
+			// Handle other cases if necessary
+		}
 	}
 
 	return taxLevels
