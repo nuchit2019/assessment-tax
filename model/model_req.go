@@ -9,6 +9,14 @@ const (
 	AllowanceTypeKReceipt AllowanceType = "k-receipt"
 )
 
+type DeductionType string
+
+const (
+	PersonalDeduction DeductionType = "personal"
+	DonationDeduction DeductionType = "donation"
+	KReceiptDeduction DeductionType = "k-receipt"
+)
+
 type Allowance struct {
 	Type        AllowanceType 	`json:"allowanceType"`
 	Amount      float64	  		`json:"amount"`
