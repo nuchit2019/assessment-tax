@@ -31,6 +31,10 @@ func main() {
 	 taxController := controller.New(cfg)
 	 e.POST("/tax/calculations", taxController.TaxCalculate)
 
+	 //TODO Admin BasicAuth
+
+	 e.POST("/admin/deductions/personal", taxController.UpdatePersonalDeductionController)
+
 	apiPort := cfg.Port
 	if apiPort == "" {
 		apiPort = "8080"
