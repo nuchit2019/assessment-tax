@@ -15,7 +15,7 @@ type DeductionValidationError struct {
 
 func (e *DeductionValidationError) Error() string {
 	return fmt.Sprintf("Field: %s, Message: %s", e.Field, e.Message)
-} 
+}
 
 func (c *Controller) UpdatePersonalDeductionController(ctx echo.Context) error {
 	deductType := ctx.Param("deductType")
