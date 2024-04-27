@@ -72,7 +72,7 @@ func TestTaxCalculate(t *testing.T) {
 		}
 	})
 
-	t.Run("I want to calculate my tax totalIncome: 500000.0 return tax: 29000.0", func(t *testing.T) {
+	t.Run("I want to calculate my tax, totalIncome: 500000.0 return tax: 29000.0", func(t *testing.T) {
 		// Setup
 		e := echo.New()
 		reqBody := `{"totalIncome":500000,"wht":0,"allowances":[{"allowanceType":"donation","amount":0}]}`

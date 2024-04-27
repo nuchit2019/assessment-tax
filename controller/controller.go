@@ -26,7 +26,7 @@ func New(db Store) *Controller {
 	return &Controller{store: db}
 }
 
-func (c *Controller) TaxCalculate(ctx echo.Context) error {
+func (c *Controller) TaxCalculateController(ctx echo.Context) error {
 	var req model.TaxRequest
 	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
@@ -86,7 +86,7 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 				}
 			}
 		default:
-			// TODO Handle other cases if necessary
+			  taxLevels[i].Tax = tax
 		}
 	}
 
