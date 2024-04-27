@@ -11,8 +11,11 @@ import (
 
 type Store interface {
 	GetTaxBrackets() ([]model.TaxBracket, error)
-	GetTaxLevel() ([]model.TaxLevel, error)
+
+	GetTaxLevel() ([]model.TaxLevelModel, error)
 	UpdatePersonalDeduction(amount float64, deductType string) error
+ 
+	GetDeduction()([]model.Deduction, error)
 }
 
 type Controller struct {
@@ -29,9 +32,7 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body"})
 	}
 
-	// Input Validation (added)
 	if len(req.Allowance) == 0 {
-		//Handle case when allowances are empty
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "invalid request body allowances are empty"})
 	}
 
@@ -58,23 +59,17 @@ func (c *Controller) TaxCalculate(ctx echo.Context) error {
 	taxableIncome -= (donationAllowance + kReceiptAllowance)
 
 	tax := c.calculateTax(taxableIncome)
-	tax -= req.WHT
 
-	if ctx.QueryParam("detail") == "true" {
-		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
-		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
-	}
-	
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 
 }
 
-func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxLevel {
+func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxLevelModel {
 
 	taxLevels, err := c.store.GetTaxLevel()
 	if err != nil {
 		log.Printf("error getting tax levels: %v", err)
-		return []model.TaxLevel{}
+		return []model.TaxLevelModel{}
 	}
 	for i := range taxLevels {
 		switch i {

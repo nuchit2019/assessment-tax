@@ -5,12 +5,13 @@ import (
 	"github.com/nuchit2019/assessment-tax/model"
 )
 
-func (c *Config) GetTaxLevel() ([]model.TaxLevel, error) {
+func (c *Config) GetTaxLevel() ([]model.TaxLevelModel, error) {
+
 	query := `
-		SELECT bracket_name, 0 as tax_rate
-		FROM tax_bracket
-		ORDER BY id;
-	`
+	SELECT id, bracket_name, min_income, max_income, tax_rate
+	FROM tax_bracket
+	ORDER BY id;
+`
 
 	rows, err := c.Db.Query(query)
 	if err != nil {
@@ -18,21 +19,28 @@ func (c *Config) GetTaxLevel() ([]model.TaxLevel, error) {
 	}
 	defer rows.Close()
 
-	var taxLevels []model.TaxLevel
+	var levels []model.TaxLevelModel
 
 	for rows.Next() {
-		var level string
-		var taxRate float64
-		if err := rows.Scan(&level, &taxRate); err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+		var l model.TaxLevelModel
+		err := rows.Scan(
+			&l.Level,
+			&l.Label,
+			&l.MinAmount,
+			&l.MaxAmount,
+			&l.TaxPercent,
+		)
+
+		if err != nil {
+			return nil, err
 		}
-
-		taxLevels = append(taxLevels, model.TaxLevel{Level: level, Tax: taxRate})
+		levels = append(levels, model.TaxLevelModel{
+			Level:      l.Level,
+			Label:      l.Label,
+			MinAmount:  l.MinAmount,
+			MaxAmount:  l.MaxAmount,
+			TaxPercent: l.TaxPercent,
+		})
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating over rows: %w", err)
-	}
-
-	return taxLevels, nil
+	return levels, nil
 }
