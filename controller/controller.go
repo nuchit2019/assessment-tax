@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"math"
-	"net/http"
+	"net/http" 
 
 	"github.com/gocarina/gocsv"
 	"github.com/labstack/echo/v4"
@@ -17,8 +17,8 @@ type Store interface {
 
 	GetTaxLevel() ([]model.TaxLevelModel, error)
 	UpdatePersonalDeduction(amount float64, deductType string) error
- 
-	GetDeduction()([]model.Deduction, error)
+
+	GetDeduction() ([]model.Deduction, error)
 }
 
 type Controller struct {
@@ -63,6 +63,24 @@ func (c *Controller) TaxCalculateController(ctx echo.Context) error {
 
 	tax := c.calculateTax(taxableIncome)
 
+	// if ctx.QueryParam("detail") == "true" {
+	// 	taxLevels := c.calculateTaxLevels(taxableIncome, tax)
+	// 	//TODO convert  []model.TaxLevelModel to TaxLevel []TaxLevel
+	// 	return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
+	// }
+	if ctx.QueryParam("detail") == "true" {
+		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
+
+		convertedTaxLevels := make([]model.TaxLevel, len(taxLevels))
+		for i, level := range taxLevels {
+			convertedTaxLevels[i] = model.TaxLevel{
+				Level: level.Label,
+				Tax:   level.Tax,
+			}
+		}
+		return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: convertedTaxLevels})
+	}
+
 	return ctx.JSON(http.StatusOK, model.TaxResponse{Tax: tax})
 
 }
@@ -89,12 +107,12 @@ func (c *Controller) calculateTaxLevels(taxableIncome, tax float64) []model.TaxL
 				}
 			}
 		default:
-			  taxLevels[i].Tax = tax
+			//taxLevels[i].Tax = tax
 		}
 	}
 
 	return taxLevels
-	  
+
 }
 
 func (c *Controller) calculateTax(taxableIncome float64) float64 {
@@ -115,15 +133,14 @@ func (c *Controller) calculateTax(taxableIncome float64) float64 {
 			taxableAmount = bracket.MaxIncome
 		}
 
-		tax += taxableAmount * (bracket.TaxRate/100.0)
+		tax += taxableAmount * (bracket.TaxRate / 100.0)
 		taxableIncome -= taxableAmount
 	}
 
 	return tax
 }
 
-
-//===================AdminController=====================
+// ===================AdminController=====================
 func (c *Controller) UpdatePersonalDeductionController(ctx echo.Context) error {
 	deductType := ctx.Param("deductType")
 	if deductType == "" {
@@ -186,9 +203,7 @@ func (e *DeductionValidationError) Error() string {
 	return fmt.Sprintf("Field: %s, Message: %s", e.Field, e.Message)
 }
 
-
-
-//===================CSV_controller=====================
+// ===================CSV_controller=====================
 func (c *Controller) TaxCalculateFormCsvController(ctx echo.Context) error {
 	taxFile, err := ctx.FormFile("taxFile")
 	if err != nil {
@@ -210,7 +225,7 @@ func (c *Controller) TaxCalculateFormCsvController(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, model.ErrorResponse{Message: "Failed to retrieve deductions: " + err.Error()})
 	}
-	deductType := DeductionTypeMap(deducts)	
+	deductType := DeductionTypeMap(deducts)
 	personalDeduction := personalType(deductType)
 	donateDeduction := donationType(deductType)
 
@@ -225,7 +240,7 @@ func (c *Controller) TaxCalculateFormCsvController(ctx echo.Context) error {
 
 		errs := validateTaxCsv(t)
 		if len(errs) > 0 {
-			return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "Invalid tax data: " + errs[0].Field+": "+errs[0].Message})
+			return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "Invalid tax data: " + errs[0].Field + ": " + errs[0].Message})
 		}
 
 		var tax float64
@@ -330,7 +345,7 @@ func calcTaxByLevel(level model.TaxLevelModel, income float64) float64 {
 		return 0
 	}
 	if income <= level.MaxAmount {
-		return (income-level.MinAmount) * float64(level.TaxPercent) / 100
+		return (income - level.MinAmount) * float64(level.TaxPercent) / 100
 	}
-	return (level.MaxAmount-level.MinAmount) * float64(level.TaxPercent) / 100
+	return (level.MaxAmount - level.MinAmount) * float64(level.TaxPercent) / 100
 }
