@@ -34,7 +34,7 @@ func main() {
 
 	tax := e.Group("/tax")
 	tax.POST("/calculations", taxController.TaxCalculateController)
-	tax.POST("/calculations/upload-csv", taxController.TaxCalculateFormCsv) // TODO
+	tax.POST("/calculations/upload-csv", taxController.TaxCalculateFormCsvController) // TODO
 
 	admin := e.Group("/admin")
 	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {

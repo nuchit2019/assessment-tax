@@ -124,16 +124,6 @@ func (c *Controller) calculateTax(taxableIncome float64) float64 {
 
 
 //===================AdminController=====================
-
-type DeductionValidationError struct {
-	Field   string
-	Message string
-}
-
-func (e *DeductionValidationError) Error() string {
-	return fmt.Sprintf("Field: %s, Message: %s", e.Field, e.Message)
-}
-
 func (c *Controller) UpdatePersonalDeductionController(ctx echo.Context) error {
 	deductType := ctx.Param("deductType")
 	if deductType == "" {
@@ -187,10 +177,19 @@ func constructResponse(deductType string, amount float64) interface{} {
 	}
 }
 
+type DeductionValidationError struct {
+	Field   string
+	Message string
+}
+
+func (e *DeductionValidationError) Error() string {
+	return fmt.Sprintf("Field: %s, Message: %s", e.Field, e.Message)
+}
+
+
 
 //===================CSV_controller=====================
-
-func (c *Controller) TaxCalculateFormCsv(ctx echo.Context) error {
+func (c *Controller) TaxCalculateFormCsvController(ctx echo.Context) error {
 	taxFile, err := ctx.FormFile("taxFile")
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, model.ErrorResponse{Message: "Failed to retrieve tax file: " + err.Error()})
@@ -291,7 +290,7 @@ func personalType(item map[string]float64) float64 {
 func donationType(item map[string]float64) float64 {
 	return item["donation"]
 }
- 
+
 func validateTaxCsv(t model.TaxCsv) []model.ValidateErr {
 	var errs []model.ValidateErr
 

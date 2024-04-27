@@ -48,8 +48,22 @@ func (m *MockStore) GetDeduction() ([]model.Deduction, error) {
 	}
 	return deductions, nil
 }
+ 
 
-func TestTaxCalculate(t *testing.T) {
+func TestUpdatePersonalDeductionController(t *testing.T) {
+	t.Run("MissingDeductTypeParameter", func(t *testing.T) {
+		testMissingDeductTypeParameter(t)
+	})
+
+	t.Run("InvalidRequestBody", func(t *testing.T) {
+		testInvalidRequestBody(t)
+	})
+
+	t.Run("InvalidDeductionAmount", func(t *testing.T) {
+		testInvalidDeductionAmount(t)
+	})
+
+	
 	t.Run("Success", func(t *testing.T) {
 		// Setup
 		e := echo.New()
@@ -64,11 +78,15 @@ func TestTaxCalculate(t *testing.T) {
 		ctrl := New(store)
 
 		// Execute
-		err := ctrl.TaxCalculate(c)
+		err := ctrl.TaxCalculateController(c)
 
 		// Assert
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
+		}
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status code %d but got %d", http.StatusOK, rec.Code)
 		}
 	})
 
@@ -86,8 +104,8 @@ func TestTaxCalculate(t *testing.T) {
 		ctrl := New(store)
 
 		// Execute
-		err := ctrl.TaxCalculate(c)
- 
+		err := ctrl.TaxCalculateController(c)
+
 		// Assert
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -116,8 +134,99 @@ func TestTaxCalculate(t *testing.T) {
 		if resultTax.Tax != expectedTax.Tax {
 			t.Errorf("unexpected tax value: got %f, want %f", resultTax.Tax, expectedTax.Tax)
 		}
- 
 
 	})
+}
 
+func testMissingDeductTypeParameter(t *testing.T) {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	// Mock store
+	store := &MockStore{}
+	ctrl := New(store)
+
+	// Execute
+	err := ctrl.UpdatePersonalDeductionController(c)
+
+	// Assert
+	if err != nil {
+		t.Error("expected error for missing deductType parameter but got none")
+	}
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("expected status code %d but got %d", http.StatusBadRequest, rec.Code)
+	}
+
+	const expectedResponseBody = `{"message":"deductType Parameter is required"}`
+	if strings.TrimSpace(rec.Body.String()) != expectedResponseBody {
+		t.Errorf("unexpected response body: got %s, want %s", rec.Body.String(), expectedResponseBody)
+	}
+}
+
+func testInvalidRequestBody(t *testing.T) {
+	// Setup
+	e := echo.New()
+	reqBody := `{"invalid": "request body"}`
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(reqBody))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	// Mock store
+	store := &MockStore{}
+	ctrl := New(store)
+
+	// Execute
+	err := ctrl.UpdatePersonalDeductionController(c)
+
+	// Assert
+	if err != nil {
+		t.Error("expected error for invalid request body but got none")
+	}
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("expected status code %d but got %d", http.StatusBadRequest, rec.Code)
+	}
+
+	expected := `{"message":"deductType Parameter is required"}`
+	if strings.TrimSpace(rec.Body.String()) != expected {
+		t.Errorf("unexpected response body: got %s, want %s", rec.Body.String(), expected)
+	}
+}
+
+func testInvalidDeductionAmount(t *testing.T) {
+	// Setup
+	e := echo.New()
+	reqBody := `{"amount":5000}`
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(reqBody))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("deductType")
+	c.SetParamValues("personal")
+
+	// Mock store
+	store := &MockStore{}
+	ctrl := New(store)
+
+	// Execute
+	err := ctrl.UpdatePersonalDeductionController(c)
+
+	// Assert
+	if err != nil {
+		t.Error("expected error for invalid deduction amount but got none")
+	}
+
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("expected status code %d but got %d", http.StatusBadRequest, rec.Code)
+	}
+
+	expected := `{"message":"Field: amount, Message: ค่าลดหย่อนส่วนตัวต้องมีค่ามากกว่า 10,000 บาท"}`
+	if strings.TrimSpace(rec.Body.String()) != expected {
+		t.Errorf("unexpected response body: got %s, want %s", rec.Body.String(), expected)
+	}
 }
