@@ -1,0 +1,321 @@
+{
+	"info": {
+		"_postman_id": "47978b5d-e3b2-4931-ab42-3cd7856331c2",
+		"name": "janawat-go-tax",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2364898"
+	},
+	"item": [
+		{
+			"name": "EXP01",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "admin!",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "adminTax",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"totalIncome\": 500000.0,\r\n  \"wht\": 0.0,\r\n  \"allowances\": [\r\n    {\r\n      \"allowanceType\": \"donation\",\r\n      \"amount\": 0.0\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP02",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "admin!",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "adminTax",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"totalIncome\": 500000.0,\r\n  \"wht\": 25000.0,\r\n  \"allowances\": [\r\n    {\r\n      \"allowanceType\": \"donation\",\r\n      \"amount\": 0.0\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP03",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"totalIncome\": 500000.0,\r\n  \"wht\": 0.0,\r\n  \"allowances\": [\r\n    {\r\n      \"allowanceType\": \"donation\",\r\n      \"amount\": 200000.0\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP04",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"totalIncome\": 500000.0,\r\n  \"wht\": 0.0,\r\n  \"allowances\": [\r\n    {\r\n      \"allowanceType\": \"donation\",\r\n      \"amount\": 200000.0\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations?detail=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations"
+					],
+					"query": [
+						{
+							"key": "detail",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP05",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "admin!",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "adminTax",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"amount\": 100000.0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/deductions/personal",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"deductions",
+						"personal"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP06",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "taxFile",
+							"type": "file",
+							"src": "/D:/Bootcamp/assessment-tax/janawat-go-tax/assessment-tax/taxes.csv"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations/upload-csv",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations",
+						"upload-csv"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP07",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"totalIncome\": 500000.0,\r\n  \"wht\": 0.0,\r\n  \"allowances\": [\r\n    {\r\n      \"allowanceType\": \"k-receipt\",\r\n      \"amount\": 200000.0\r\n    },\r\n    {\r\n      \"allowanceType\": \"donation\",\r\n      \"amount\": 100000.0\r\n    }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/tax/calculations?detail=true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"tax",
+						"calculations"
+					],
+					"query": [
+						{
+							"key": "detail",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EXP08",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "admin!",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "adminTax",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"amount\": 50000\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/deductions/k-receipt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"deductions",
+						"k-receipt"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
