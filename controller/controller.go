@@ -112,7 +112,7 @@ func (c *Controller) calculateTax(taxableIncome float64) float64 {
 			taxableAmount = bracket.MaxIncome
 		}
 
-		tax += taxableAmount * bracket.TaxRate
+		tax += taxableAmount * (bracket.TaxRate/100.0)
 		taxableIncome -= taxableAmount
 	}
 
