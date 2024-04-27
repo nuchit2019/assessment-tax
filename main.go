@@ -30,7 +30,7 @@ func main() {
 
 	tax := e.Group("/tax")
 	tax.POST("/calculations", taxController.TaxCalculate)
-	tax.POST("/calculations/upload-csv", taxController.TaxCalculate) // TODO
+	tax.POST("/calculations/upload-csv", taxController.TaxCalculateFormCsv) // TODO
 
 	//  Admin BasicAuth
 	admin := e.Group("/admin")
