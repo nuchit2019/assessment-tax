@@ -33,7 +33,7 @@ func main() {
 	taxController := controller.New(cfg)
 
 	tax := e.Group("/tax")
-	tax.POST("/calculations", taxController.TaxCalculate)
+	tax.POST("/calculations", taxController.TaxCalculateController)
 	tax.POST("/calculations/upload-csv", taxController.TaxCalculateFormCsv) // TODO
 
 	admin := e.Group("/admin")
