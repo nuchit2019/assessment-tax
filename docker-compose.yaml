@@ -1,4 +1,21 @@
+version: '3.8'
 services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ktaxes
+    depends_on:
+      - postgres
+
   postgres:
     image: postgres:16
     environment:
