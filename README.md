@@ -3,9 +3,9 @@
 ```
 Update enpoint
 
-POST: tax/calculations =  = แสดงเฉพาะ ภาษีคำนวน (tax)
+POST: tax/calculations = แสดงเฉพาะภาษีคำนวน(tax)
 
-POST: tax/calculations?detail=true = แสดงเฉพาะ ภาษีคำนวน (tax) และรายละเอียดของขั้นบันใดภาษี (EXP04,EXP07)
+POST: tax/calculations?detail=true = แสดงภาษีคำนวน(tax) และรายละเอียดของขั้นบันใดภาษี User storiesที่ (EXP04,EXP07)
 
 ```
 
