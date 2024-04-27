@@ -62,12 +62,7 @@ func (c *Controller) TaxCalculateController(ctx echo.Context) error {
 	taxableIncome -= (donationAllowance + kReceiptAllowance)
 
 	tax := c.calculateTax(taxableIncome)
-
-	// if ctx.QueryParam("detail") == "true" {
-	// 	taxLevels := c.calculateTaxLevels(taxableIncome, tax)
-	// 	//TODO convert  []model.TaxLevelModel to TaxLevel []TaxLevel
-	// 	return ctx.JSON(http.StatusOK, model.TaxDetailResponse{Tax: tax, TaxLevel: taxLevels})
-	// }
+	
 	if ctx.QueryParam("detail") == "true" {
 		taxLevels := c.calculateTaxLevels(taxableIncome, tax)
 
