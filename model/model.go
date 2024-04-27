@@ -23,3 +23,8 @@ type ValidateErr struct {
 	Field   string `json:"field"`
 	Message string `json:"message"`
 }
+
+type DeductionValidationError struct {
+	Field   string
+	Message string
+}
