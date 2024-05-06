@@ -32,7 +32,7 @@ func main() {
 	setupRoutes(e, cfg)
 
 	// Start server
-	startServer(e, cfg) 
+	startServer(e, cfg)
 
 }
 
@@ -46,41 +46,44 @@ func loadConfig() (*config.Config, error) {
 }
 
 func setupRoutes(e *echo.Echo, cfg *config.Config) {
+	setupBasicRoutes(e)
+	setupTaxRoutes(e, cfg)
+	setupAdminRoutes(e, cfg)
+}
 
+func setupBasicRoutes(e *echo.Echo) {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
 	})
+}
 
+func setupTaxRoutes(e *echo.Echo, cfg *config.Config) {
 	taxController := controller.New(cfg)
-
 	tax := e.Group("/tax")
 	tax.POST("/calculations", taxController.TaxCalculateController)
 	tax.POST("/calculations/upload-csv", taxController.TaxCalculateFormCsvController)
+}
 
+func setupAdminRoutes(e *echo.Echo, cfg *config.Config) {
 	admin := e.Group("/admin")
 	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		return username == cfg.Admin && password == cfg.AdminPassword, nil
 	}))
+
+	taxController := controller.New(cfg)
 	admin.POST("/deductions/:deductType", taxController.UpdatePersonalDeductionController)
-	
 }
 
 func startServer(e *echo.Echo, cfg *config.Config) {
-	apiPort := cfg.Port	
-	// go func() {
-	// 	if err := e.Start(":" + apiPort); err != nil && err != http.ErrServerClosed {
-	// 		e.Logger.Fatal(e.Start(":" + apiPort))
-	// 	}
-	// }()
-
+	apiPort := cfg.Port
 	go func() {
 		if err := e.Start(":" + apiPort); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("error starting server: %v", err)
 		}
 	}()
 
-	shutdown:= make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt)	
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt)
 	<-shutdown
 
 	// Print "shutting down the server"
