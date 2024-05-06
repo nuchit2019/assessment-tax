@@ -17,23 +17,15 @@ import (
 
 func main() {
 	e := echo.New()
-
-	// Load configuration
 	cfg, err := loadConfig()
 	if err != nil {
 		log.Fatalf("error initializing configuration: %v", err)
 	}
 	defer cfg.Close()
 
-	// Midleware
 	e.Use(middleware.Logger())
-
-	// Routes
 	setupRoutes(e, cfg)
-
-	// Start server
 	startServer(e, cfg)
-
 }
 
 func loadConfig() (*config.Config, error) {
@@ -41,7 +33,6 @@ func loadConfig() (*config.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return cfg, nil
 }
 
@@ -85,15 +76,10 @@ func startServer(e *echo.Echo, cfg *config.Config) {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, os.Interrupt)
 	<-shutdown
-
-	// Print "shutting down the server"
 	fmt.Println("shutting down the server")
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
 	if err := e.Shutdown(ctx); err != nil {
 		log.Fatalf("error shutting down server: %v", err)
 	}
-
 }
