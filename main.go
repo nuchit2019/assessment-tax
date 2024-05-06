@@ -16,15 +16,36 @@ import (
 )
 
 func main() {
-
 	e := echo.New()
-	e.Use(middleware.Logger())
 
-	cfg, err := config.New()
+	// Load configuration
+	cfg, err := loadConfig()
 	if err != nil {
 		log.Fatalf("error initializing configuration: %v", err)
 	}
 	defer cfg.Close()
+
+	// Midleware
+	e.Use(middleware.Logger())
+
+	// Routes
+	setupRoutes(e, cfg)
+
+	// Start server
+	startServer(e, cfg) 
+
+}
+
+func loadConfig() (*config.Config, error) {
+	cfg, err := config.New()
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func setupRoutes(e *echo.Echo, cfg *config.Config) {
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, Go Bootcamp!")
@@ -40,19 +61,26 @@ func main() {
 	admin.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
 		return username == cfg.Admin && password == cfg.AdminPassword, nil
 	}))
-
 	admin.POST("/deductions/:deductType", taxController.UpdatePersonalDeductionController)
+	
+}
 
-	apiPort := cfg.Port 
+func startServer(e *echo.Echo, cfg *config.Config) {
+	apiPort := cfg.Port	
+	// go func() {
+	// 	if err := e.Start(":" + apiPort); err != nil && err != http.ErrServerClosed {
+	// 		e.Logger.Fatal(e.Start(":" + apiPort))
+	// 	}
+	// }()
 
 	go func() {
 		if err := e.Start(":" + apiPort); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal(e.Start(":" + apiPort))
+			log.Fatalf("error starting server: %v", err)
 		}
 	}()
 
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, os.Interrupt)
+	shutdown:= make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt)	
 	<-shutdown
 
 	// Print "shutting down the server"
@@ -62,7 +90,7 @@ func main() {
 	defer cancel()
 
 	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
+		log.Fatalf("error shutting down server: %v", err)
 	}
 
 }
