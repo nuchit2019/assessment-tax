@@ -25,7 +25,9 @@ func main() {
 
 	e.Use(middleware.Logger())
 	setupRoutes(e, cfg)
+
 	startServer(e, cfg)
+	shutdownServer(e)
 }
 
 func loadConfig() (*config.Config, error) {
@@ -77,6 +79,11 @@ func startServer(e *echo.Echo, cfg *config.Config) {
 	signal.Notify(shutdown, os.Interrupt)
 	<-shutdown
 	fmt.Println("shutting down the server")
+
+	// shutdownServer(e)
+}
+
+func shutdownServer(e *echo.Echo) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := e.Shutdown(ctx); err != nil {
